@@ -26,7 +26,9 @@ import http from 'http';
 import { getRouteMap, handleRoute } from './mfw/index.js';
 
 const routes = getRouteMap('./ui/views', { root: 'LandingPage', notFound: 'My404Page' });
-const render = handleRoute(routes, './ui/views');
+const render = handleRoute(routes, './ui/views', {
+  errorView: 'ErrorView' // shown if any view throws during rendering
+});
 
 const server = http.createServer(async (req, res) => {
   const html = await render(req.url);
@@ -45,7 +47,50 @@ server.listen(3000, () => console.log('http://localhost:3000'));
 /ui/views/
   ├── LandingPage.js    → /
   ├── TasksPage.js      → /tasks
+  ├── ErrorView.js      → error fallback
   └── My404Page.js      → /404
+```
+
+---
+
+## 🔒 Security
+
+The framework includes a simple HTML escape utility to prevent XSS attacks:
+
+```js
+import { escapeHtml } from './mfw/index.js';
+
+export default function UserProfilePage() {
+  const userInput = '<script>alert("xss")</script>';
+  return `
+    <div>
+      <h1>User Profile</h1>
+      <p>Safe: ${escapeHtml(userInput)}</p>
+    </div>
+  `;
+}
+```
+
+---
+
+## ⚠️ Error Handling
+
+Views can throw errors during rendering. The framework will:
+
+1. Try to render the configured error view
+2. If that fails, show a simple error message
+3. Log the error to console
+
+```js
+// ErrorView.js
+export default function ErrorView() {
+  return `
+    <div class="error">
+      <h1>Something went wrong</h1>
+      <p>Please try again later</p>
+    </div>
+  `;
+}
 ```
 
 ---
@@ -55,8 +100,9 @@ server.listen(3000, () => console.log('http://localhost:3000'));
 From `mfw/index.js`:
 
 - `getRouteMap(viewDir, { root?, notFound? })`
-- `handleRoute(routeMap, viewDir)`
+- `handleRoute(routeMap, viewDir, { errorView? })`
 - `resolveComponent(viewName, viewDir)`
+- `escapeHtml(str)` (XSS protection)
 - `store(initialValue)` (optional mutable state helper)
 
 ---
