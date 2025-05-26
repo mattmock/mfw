@@ -1,57 +1,58 @@
-# MFW
-lil bb simple web app framework 
+# mfw – Minimal Server-Side Rendering Framework
 
-## ✨ Features
+`mfw` is a tiny zero-dependency JavaScript framework for building server-rendered web apps using Express and plain JS views. It provides:
 
-* `renderComponent(name, el, props)` – Declarative HTML-driven rendering
-* `data-*` bindings for text, HTML, and attributes
-* Optional `onMount` and `onUnmount` lifecycle hooks
-* `MFW.Router` – Basic hash/history-based routing (optional)
-* `MFW.Store` – Global reactive state store (optional)
-* TypeScript `.d.ts` types included for app-side autocomplete
-* Components live in `/components/`, organized how you like
-* No dependencies
+- ✅ File-based routing for views
+- ✅ Async-safe route handlers
+- ✅ Dynamic view resolution
+- ✅ Optional state management helper
+- ❌ No hydration, no bundlers, no frontend runtime
 
 ---
 
-## 🛠 Example Usage
+## Installation
+
+Just copy the files (`router.js`, `controller.js`, `helpers.js`) into your project.
+
+---
+
+## Usage
 
 ```js
-import { MFW } from './mfw/core.js';
-import { resolveComponent } from './mfw/helpers.js';
+import express from 'express';
+import { defineFileRoutes } from './mfw/router.js';
 
-MFW.renderComponent(resolveComponent('shared/avatar'), document.body, {
-  name: 'Matt',
-  image: '/avatar.png'
-});
+const app = express();
+app.use(express.json());
+
+app.use(defineFileRoutes('./ui/views', {
+  root: 'LandingPage',
+  notFound: 'My404Page'
+}));
+```
+
+### Views (`ui/views/*.js`)
+
+```js
+import Layout from '../components/Layout.js';
+
+export default function TasksPage() {
+  return Layout(`<h1>Tasks</h1><p>Here's some HTML!</p>`);
+}
 ```
 
 ---
 
-## 📁 Project Structure
+## API
 
-```
-mfw/
-├── core.js          # Framework core
-├── core.d.ts        # TypeScript type declarations
-├── router.js        # Optional client-side routing
-├── store.js         # Optional state manager
-└── helpers.js       # e.g. resolveComponent(path)
-```
+### `defineFileRoutes(viewDirPath, options?)`
+Creates a middleware that maps routes to views based on filenames.
 
-App-side:
+### `controller(fn)`
+Wraps an async Express handler with automatic error handling.
 
-```
-components/
-└── shared/
-    └── avatar/
-        ├── avatar.html
-        ├── avatar.css
-        └── avatar.js
+### `resolveComponent(viewName, viewDirPath)`
+Dynamically loads a JS module and returns its default export.
 
-views/
-└── user/
-    └── profile.js
-```
-
----
+### `store()` _(optional)_
+Lightweight mutable state store.
