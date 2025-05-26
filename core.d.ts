@@ -1,22 +1,46 @@
-export interface RenderOptions {
-  onMount?: (el: HTMLElement) => void;
-  onUnmount?: (el: HTMLElement) => void;
-}
+import type { RequestHandler } from 'express';
 
-export interface RenderResult {
-  element: HTMLElement;
-  render: (updatedProps?: Record<string, any>) => void;
-  unmount: () => void;
-}
+/**
+ * Creates an Express middleware that maps URL paths to view components.
+ */
+export function defineFileRoutes(
+  viewDirPath: string,
+  options?: {
+    root?: string;
+    notFound?: string;
+  }
+): RequestHandler;
 
-export function renderComponent(
+/**
+ * Dynamically loads a view component module from a given directory.
+ */
+export function resolveComponent(
   name: string,
-  targetEl: HTMLElement,
-  props?: Record<string, any>,
-  methods?: Record<string, Function>,
-  options?: RenderOptions
-): Promise<RenderResult>;
+  viewDirPath: string
+): Promise<string>;
+
+/**
+ * Wraps an async Express route handler with error handling.
+ */
+export function controller(
+  fn: (req: any, res: any) => Promise<any>
+): RequestHandler;
+
+/**
+ * A minimal mutable state store (optional).
+ */
+export function store<T>(
+  initial: T
+): {
+  get: () => T;
+  set: (value: T) => void;
+  update: (fn: (value: T) => T) => void;
+  subscribe: (fn: (value: T) => void) => () => void;
+};
 
 export const MFW: {
-  renderComponent: typeof renderComponent;
+  defineFileRoutes: typeof defineFileRoutes;
+  resolveComponent: typeof resolveComponent;
+  controller: typeof controller;
+  store: typeof store;
 };
