@@ -1,6 +1,8 @@
-export function resolveComponent(path) {
-  const parts = path.split('/');
-  const file = parts.at(-1);
-  const folder = parts.at(-2);
-  return folder === file ? path : `${path}/${file}`;
+/**
+ * Dynamically imports a view component by name and path.
+ */
+export async function resolveComponent(name, viewDirPath) {
+  const modulePath = path.join(viewDirPath, name + '.js');
+  const module = await import(modulePath);
+  return module.default();
 }

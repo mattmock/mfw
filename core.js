@@ -1,6 +1,7 @@
 export async function renderComponent(name, targetEl, props = {}, methods = {}, options = {}) {
   const [folder, file] = name.split('/').slice(-2);
-  const basePath = `./components/${name}`;
+  const isView = name.startsWith('views/');
+  const basePath = isView ? `./${name}` : `./components/${name}`;
   const templatePath = `${basePath}.html`;
   const cssPath = `${basePath}.css`;
 
