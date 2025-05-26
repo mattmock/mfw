@@ -33,7 +33,8 @@ export function defineFileRoutes(viewDirPath, options = {}) {
   }
 
   return async function(req, res) {
-    const viewName = routes[req.path] || routes['/404'];
+    const cleanPath = req.path.replace(/\/+$/, '') || '/';
+    const viewName = routes[cleanPath] || routes['/404'];
     try {
       const html = await resolveComponent(viewName, viewDirPath);
       res.send(html);
