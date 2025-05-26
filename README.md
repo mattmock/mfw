@@ -1,58 +1,62 @@
-# mfw – Minimal Server-Side Rendering Framework
+# mfw – Minimal Platform-Independent SSR Framework
 
-`mfw` is a tiny zero-dependency JavaScript framework for building server-rendered web apps using Express and plain JS views. It provides:
+`mfw` is a micro-framework for building server-rendered web applications using nothing but plain JavaScript, file-based views, and a simple routing model.
 
-- ✅ File-based routing for views
-- ✅ Async-safe route handlers
-- ✅ Dynamic view resolution
-- ✅ Optional state management helper
-- ❌ No hydration, no bundlers, no frontend runtime
+It is:
 
----
-
-## Installation
-
-Just copy the files (`router.js`, `controller.js`, `helpers.js`) into your project.
+- ✅ Platform-independent (works with any HTTP server)
+- ✅ Zero dependencies
+- ✅ File-based routing, no configs
+- ✅ No bundlers, no hydration, no complexity
 
 ---
 
-## Usage
+## 🧱 Core Concepts
+
+- Views are plain `.js` modules that export HTML string functions
+- Routing is derived from filenames (like `TasksPage.js` → `/tasks`)
+- You bring your own HTTP server (Node, Deno, Bun, etc.)
+
+---
+
+## 🚀 Usage
 
 ```js
-import express from 'express';
-import { defineFileRoutes } from './mfw/router.js';
+import http from 'http';
+import { getRouteMap, handleRoute } from './mfw/index.js';
 
-const app = express();
-app.use(express.json());
+const routes = getRouteMap('./ui/views', { root: 'LandingPage', notFound: 'My404Page' });
+const render = handleRoute(routes, './ui/views');
 
-app.use(defineFileRoutes('./ui/views', {
-  root: 'LandingPage',
-  notFound: 'My404Page'
-}));
-```
+const server = http.createServer(async (req, res) => {
+  const html = await render(req.url);
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(html);
+});
 
-### Views (`ui/views/*.js`)
-
-```js
-import Layout from '../components/Layout.js';
-
-export default function TasksPage() {
-  return Layout(`<h1>Tasks</h1><p>Here's some HTML!</p>`);
-}
+server.listen(3000, () => console.log('http://localhost:3000'));
 ```
 
 ---
 
-## API
+## 📁 File Structure Example
 
-### `defineFileRoutes(viewDirPath, options?)`
-Creates a middleware that maps routes to views based on filenames.
+```
+/ui/views/
+  ├── LandingPage.js    → /
+  ├── TasksPage.js      → /tasks
+  └── My404Page.js      → /404
+```
 
-### `controller(fn)`
-Wraps an async Express handler with automatic error handling.
+---
 
-### `resolveComponent(viewName, viewDirPath)`
-Dynamically loads a JS module and returns its default export.
+## 📦 Exports
 
-### `store()` _(optional)_
-Lightweight mutable state store.
+From `mfw/index.js`:
+
+- `getRouteMap(viewDir, { root?, notFound? })`
+- `handleRoute(routeMap, viewDir)`
+- `resolveComponent(viewName, viewDir)`
+- `store(initialValue)` (optional mutable state helper)
+
+---

@@ -2,54 +2,61 @@
 
 ---
 
-## defineFileRoutes(viewDirPath, options)
+## `getRouteMap(viewDirPath, options?)`
 
-```js
-app.use(defineFileRoutes('./ui/views', {
+Returns an object mapping URL paths to view file names based on the files in your directory.
+
+```ts
+getRouteMap('./ui/views', {
   root: 'LandingPage',
   notFound: 'My404Page'
-}));
+});
 ```
 
-| Option       | Type   | Description                                  |
-|--------------|--------|----------------------------------------------|
-| `viewDirPath`| string | Absolute or relative path to your views dir  |
-| `root`       | string | The view used for `/` (default: `HomePage`)  |
-| `notFound`   | string | The view used for `/404` and unknown paths   |
+**Result:**
+```ts
+{
+  '/': 'LandingPage',
+  '/tasks': 'TasksPage',
+  '/404': 'My404Page'
+}
+```
 
 ---
 
-## controller(fn)
+## `handleRoute(routeMap, viewDirPath)`
 
-```js
-app.post('/api/tasks', controller(async (req, res) => {
-  const task = req.body;
-  await saveTask(task);
-  res.send({ ok: true });
-}));
+Returns a function that resolves a given URL path to an HTML string.
+
+```ts
+const render = handleRoute(routeMap, './ui/views');
+const html = await render('/tasks');
 ```
-
-Wraps async route logic, logs errors, and returns 500 on unhandled exceptions.
 
 ---
 
-## resolveComponent(name, viewDirPath)
+## `resolveComponent(viewName, viewDirPath)`
 
-```js
+Dynamically imports and executes a view module to get its HTML.
+
+```ts
 const html = await resolveComponent('TasksPage', './ui/views');
 ```
 
-Dynamically imports a JS view file by name.
-
 ---
 
-## store() (Optional)
+## `store(initialValue)`
 
-```js
-const counter = store(0);
-counter.get();      // 0
-counter.set(5);     // 5
-counter.update(n => n + 1); // 6
+A minimal reactive store pattern.
+
+```ts
+const count = store(0);
+count.subscribe(val => console.log(val));
+count.update(n => n + 1);
 ```
 
-Simple mutable state container.
+API:
+- `get()` → current value
+- `set(value)` → set value
+- `update(fn)` → transform value
+- `subscribe(fn)` → react to changes
