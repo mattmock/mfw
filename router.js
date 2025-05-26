@@ -1,0 +1,1 @@
+export const Router = { add() {}, init() {}, navigate() {} };
