@@ -1,6 +1,8 @@
-export { getRouteMap } from './core/getRouteMap.js';
-export { handleRoute } from './core/handleRoute.js';
-export { resolveHtmlView } from './core/resolveHtmlView.js';
+import { getRouteMap } from './core/getRouteMap.js';
+import { handleRoute } from './core/handleRoute.js';
+import { resolveHtmlView } from './core/resolveHtmlView.js';
+
+export { getRouteMap, handleRoute, resolveHtmlView };
 
 export const MFW = {
   getRouteMap,

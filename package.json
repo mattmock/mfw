@@ -1,0 +1,11 @@
+{
+  "name": "mfw",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "files": [
+    "core/",
+    "index.js",
+    "store.js"
+  ]
+} 
