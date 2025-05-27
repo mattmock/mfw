@@ -4,16 +4,21 @@ export function getRouteMap(
     root?: string;
     notFound?: string;
   }
-): Record<string, string>;
+): Promise<Record<string, string>>;
 
 export function handleRoute(
   routeMap: Record<string, string>,
-  viewDirPath: string
+  viewDirPath: string,
+  options?: {
+    props?: Record<string, unknown>;
+    errorView?: string;
+  }
 ): (url: string) => Promise<string>;
 
-export function resolveComponent(
+export function resolveHtmlView(
   name: string,
-  viewDirPath: string
+  viewDirPath: string,
+  props?: Record<string, unknown>
 ): Promise<string>;
 
 export function store<T>(
@@ -28,6 +33,6 @@ export function store<T>(
 export const MFW: {
   getRouteMap: typeof getRouteMap;
   handleRoute: typeof handleRoute;
-  resolveComponent: typeof resolveComponent;
+  resolveHtmlView: typeof resolveHtmlView;
   store: typeof store;
 };

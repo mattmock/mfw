@@ -1,17 +1,27 @@
-import { resolveComponent } from './resolveComponent.js';
+import { resolveHtmlView } from './resolveHtmlView.js';
 
-export function handleRoute(routeMap, viewDirPath, { errorView = 'ErrorView' } = {}) {
+export function handleRoute(routeMap, viewDirPath, { props = {}, errorView = 'error' } = {}) {
   return async function(url) {
+    const cleanUrl = url.replace(/\/+$|\/+(?=\?)/g, '') || '/';
+    const viewName = routeMap[cleanUrl] || routeMap['/404'];
     try {
-      const cleanUrl = url.replace(/\/+$|\/+(?=\?)/g, '') || '/';
-      const viewName = routeMap[cleanUrl] || routeMap['/404'];
-      return await resolveComponent(viewName, viewDirPath);
-    } catch (error) {
-      console.error(`[handleRoute] Error rendering ${url}:`, error);
+      return await resolveHtmlView(viewName, viewDirPath, props);
+    } catch (err) {
+      console.error('[handleRoute] View failed:', err);
       try {
-        return await resolveComponent(errorView, viewDirPath);
-      } catch (fallbackError) {
-        return `<h1>Error</h1><p>${error.message}</p>`;
+        return await resolveHtmlView(errorView, viewDirPath, { error: err.message });
+      } catch (fallbackErr) {
+        console.error('[handleRoute] Error view failed:', fallbackErr);
+        return `
+          <!DOCTYPE html>
+          <html>
+            <head><title>Error</title></head>
+            <body>
+              <h1>Something went wrong</h1>
+              <p>${err.message}</p>
+            </body>
+          </html>
+        `;
       }
     }
   };

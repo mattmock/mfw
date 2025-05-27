@@ -1,96 +1,49 @@
-# mfw – Minimal Platform-Independent SSR Framework
+# mfw – Minimal HTML-Driven SSR Framework
 
-`mfw` is a micro-framework for building server-rendered web applications using nothing but plain JavaScript, file-based views, and a simple routing model.
-
-It is:
-
-- ✅ Platform-independent (works with any HTTP server)
-- ✅ Zero dependencies
-- ✅ File-based routing, no configs
-- ✅ No bundlers, no hydration, no complexity
+`mfw` is a tiny server-side rendering microframework that uses native `.html` files as views. It’s framework-agnostic, dependency-free, and built to work with any HTTP server (Node, Deno, Bun, Python, etc).
 
 ---
 
-## 🧱 Core Concepts
+## ✅ Features
 
-- Views are plain `.js` modules that export HTML string functions
-- Routing is derived from filenames (like `TasksPage.js` → `/tasks`)
-- You bring your own HTTP server (Node, Deno, Bun, etc.)
+- 📄 Views as plain `.html` files
+- 🔧 File-based routing (e.g. `/about.html` → `/about`)
+- 🧠 No hydration, no bundlers, no JS-based views
+- 🧱 Works with any HTTP server (Express, http.createServer, etc.)
+- 💬 Simple variable interpolation via `{{key}}`
 
 ---
 
-## 🚀 Usage
+## 🛠 Example Usage
 
 ```js
 import http from 'http';
 import { getRouteMap, handleRoute } from './mfw/index.js';
 
-const routes = getRouteMap('./ui/views', { root: 'LandingPage', notFound: 'My404Page' });
-const render = handleRoute(routes, './ui/views', {
-  errorView: 'ErrorView' // shown if any view throws during rendering
+const viewDir = './ui/views';
+const routes = getRouteMap(viewDir, { root: 'index', notFound: '404' });
+const render = handleRoute(routes, viewDir, {
+  props: { title: 'My Site' },
+  errorView: 'error'
 });
 
-const server = http.createServer(async (req, res) => {
+http.createServer(async (req, res) => {
   const html = await render(req.url);
   res.writeHead(200, { 'Content-Type': 'text/html' });
   res.end(html);
-});
-
-server.listen(3000, () => console.log('http://localhost:3000'));
+}).listen(3000);
 ```
 
 ---
 
-## 📁 File Structure Example
+## 📁 Folder Structure
 
 ```
 /ui/views/
-  ├── LandingPage.js    → /
-  ├── TasksPage.js      → /tasks
-  ├── ErrorView.js      → error fallback
-  └── My404Page.js      → /404
-```
-
----
-
-## 🔒 Security
-
-The framework includes a simple HTML escape utility to prevent XSS attacks:
-
-```js
-import { escapeHtml } from './mfw/index.js';
-
-export default function UserProfilePage() {
-  const userInput = '<script>alert("xss")</script>';
-  return `
-    <div>
-      <h1>User Profile</h1>
-      <p>Safe: ${escapeHtml(userInput)}</p>
-    </div>
-  `;
-}
-```
-
----
-
-## ⚠️ Error Handling
-
-Views can throw errors during rendering. The framework will:
-
-1. Try to render the configured error view
-2. If that fails, show a simple error message
-3. Log the error to console
-
-```js
-// ErrorView.js
-export default function ErrorView() {
-  return `
-    <div class="error">
-      <h1>Something went wrong</h1>
-      <p>Please try again later</p>
-    </div>
-  `;
-}
+  ├── index.html      → /
+  ├── about.html      → /about
+  ├── 404.html        → fallback
+  └── error.html      → optional error fallback
 ```
 
 ---
@@ -99,10 +52,21 @@ export default function ErrorView() {
 
 From `mfw/index.js`:
 
-- `getRouteMap(viewDir, { root?, notFound? })`
-- `handleRoute(routeMap, viewDir, { errorView? })`
-- `resolveComponent(viewName, viewDir)`
-- `escapeHtml(str)` (XSS protection)
-- `store(initialValue)` (optional mutable state helper)
+- `getRouteMap(viewDirPath, { root?, notFound? })`  
+- `handleRoute(routeMap, viewDirPath, { props?, errorView? })`  
+- `resolveHtmlView(viewName, viewDirPath, props?)`
 
 ---
+
+## 📝 Notes
+
+- You can use `{{key}}` syntax in your `.html` files for prop substitution
+- This system is logic-free on purpose (no conditionals/loops)
+- You are free to extend it with a templating engine if needed
+
+---
+
+## 🔗 Links
+
+- [Docs: API Reference](./docs/api.md)
+- [Docs: Folder Conventions](./docs/conventions.md)

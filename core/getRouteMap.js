@@ -1,15 +1,15 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
-export function getRouteMap(viewDirPath, options = {}) {
+export async function getRouteMap(viewDirPath, options = {}) {
   const routes = {};
-  const files = fs.readdirSync(viewDirPath);
-  const rootFile = options.root || 'HomePage';
-  const notFoundFile = options.notFound || 'NotFoundPage';
+  const files = await fs.readdir(viewDirPath);
+  const rootFile = options.root || 'index';
+  const notFoundFile = options.notFound || '404';
 
   for (const file of files) {
-    if (!file.endsWith('.js')) continue;
-    const base = path.basename(file, '.js');
+    if (!file.endsWith('.html')) continue;
+    const base = path.basename(file, '.html');
 
     let route;
     if (base === rootFile) {
@@ -17,7 +17,7 @@ export function getRouteMap(viewDirPath, options = {}) {
     } else if (base === notFoundFile) {
       route = '/404';
     } else {
-      route = '/' + base.replace(/Page$/, '').toLowerCase();
+      route = '/' + base.toLowerCase();
     }
 
     routes[route] = base;
