@@ -4,59 +4,17 @@
 
 ## `getRouteMap(viewDirPath, options?)`
 
-Returns an object mapping URL paths to view file names based on the files in your directory.
+Maps view files to routes.
 
-```ts
-getRouteMap('./ui/views', {
-  root: 'LandingPage',
-  notFound: 'My404Page'
-});
-```
+## `handleRoute(routeMap, viewDirPath, options?)`
 
-**Result:**
-```ts
-{
-  '/': 'LandingPage',
-  '/tasks': 'TasksPage',
-  '/404': 'My404Page'
-}
-```
+Returns a handler for rendering routes to HTML strings.
 
----
+Options:
+- `props`: data for `{{key}}` replacement
+- `errorView`: fallback view
+- `componentDirPath`: base path for `{{> component }}` includes
 
-## `handleRoute(routeMap, viewDirPath)`
+## `resolveHtmlView(...)`
 
-Returns a function that resolves a given URL path to an HTML string.
-
-```ts
-const render = handleRoute(routeMap, './ui/views');
-const html = await render('/tasks');
-```
-
----
-
-## `resolveComponent(viewName, viewDirPath)`
-
-Dynamically imports and executes a view module to get its HTML.
-
-```ts
-const html = await resolveComponent('TasksPage', './ui/views');
-```
-
----
-
-## `store(initialValue)`
-
-A minimal reactive store pattern.
-
-```ts
-const count = store(0);
-count.subscribe(val => console.log(val));
-count.update(n => n + 1);
-```
-
-API:
-- `get()` → current value
-- `set(value)` → set value
-- `update(fn)` → transform value
-- `subscribe(fn)` → react to changes
+Reads an HTML file, replaces `{{key}}` and `{{> name }}` includes.

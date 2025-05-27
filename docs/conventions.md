@@ -1,56 +1,36 @@
-# mfw View and Folder Conventions
+# mfw Conventions
 
----
+## Views and Components
 
-## Directory layout
+- Views live in `/ui/views/`
+- Components live in `/ui/components/[name]/[name].html`
 
-```
-/ui
-  /views         ← Route-level HTML renderers
-  /components    ← Shared layout/presentation helpers
-  /public        ← Static assets (CSS, images)
-```
+## Component Includes
 
----
-
-## Views
-
-A view is a JS module that exports a function returning an HTML string:
-
-```js
-export default function LandingPage() {
-  return `
-    <html>
-      <body>
-        <h1>Welcome</h1>
-      </body>
-    </html>
-  `;
-}
-```
-
-Wrap views using a shared Layout from `components/Layout.js`.
-
----
-
-## Routing
-
-These files automatically become routes:
-
-| File              | Route     |
-|-------------------|-----------|
-| `LandingPage.js`  | `/`       |
-| `TasksPage.js`    | `/tasks`  |
-| `My404Page.js`    | `/404`    |
-
-Filenames are stripped of `Page` and lowercased.
-
----
-
-## Static files
-
-Anything in `/ui/public` is served at `/`:
+Use `{{> name }}` to include components. For example:
 
 ```html
-<link rel="stylesheet" href="/styles.css">
+<div class="page">
+  <h1>Welcome</h1>
+  {{> header }}
+  <main>
+    {{> sidebar }}
+    {{> content }}
+  </main>
+</div>
 ```
+
+### Component Limitations
+
+- Components cannot receive props (use global props instead)
+- Maximum include depth is 10 levels
+- Component names must be alphanumeric with hyphens/underscores
+- Components should be self-contained (no external dependencies)
+
+### Best Practices
+
+1. Keep components small and focused
+2. Use semantic HTML
+3. Avoid circular dependencies
+4. Use global props for shared data
+5. Keep component paths simple and flat

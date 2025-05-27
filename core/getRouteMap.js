@@ -10,16 +10,7 @@ export async function getRouteMap(viewDirPath, options = {}) {
   for (const file of files) {
     if (!file.endsWith('.html')) continue;
     const base = path.basename(file, '.html');
-
-    let route;
-    if (base === rootFile) {
-      route = '/';
-    } else if (base === notFoundFile) {
-      route = '/404';
-    } else {
-      route = '/' + base.toLowerCase();
-    }
-
+    const route = base === rootFile ? '/' : base === notFoundFile ? '/404' : '/' + base.toLowerCase();
     routes[route] = base;
   }
 

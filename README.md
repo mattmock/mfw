@@ -1,16 +1,17 @@
 # mfw – Minimal HTML-Driven SSR Framework
 
-`mfw` is a tiny server-side rendering microframework that uses native `.html` files as views. It’s framework-agnostic, dependency-free, and built to work with any HTTP server (Node, Deno, Bun, Python, etc).
+`mfw` is a tiny server-side rendering microframework built around native `.html` files and file-based routing. It’s framework-agnostic, dependency-free, and designed for flexibility with zero frontend framework assumptions.
 
 ---
 
 ## ✅ Features
 
-- 📄 Views as plain `.html` files
-- 🔧 File-based routing (e.g. `/about.html` → `/about`)
-- 🧠 No hydration, no bundlers, no JS-based views
-- 🧱 Works with any HTTP server (Express, http.createServer, etc.)
-- 💬 Simple variable interpolation via `{{key}}`
+- 📄 Views as plain `.html` files (not JS templates)
+- 🔧 File-based routing (e.g. `index.html` → `/`)
+- 🔌 Component support via `{{> name }}` includes
+- 🔐 Safe variable interpolation with `{{key}}`
+- 🧱 Works with any server (Express, Node http, Bun, Deno, etc.)
+- 🧠 No hydration, no build step, no VDOM
 
 ---
 
@@ -21,9 +22,12 @@ import http from 'http';
 import { getRouteMap, handleRoute } from './mfw/index.js';
 
 const viewDir = './ui/views';
-const routes = getRouteMap(viewDir, { root: 'index', notFound: '404' });
+const componentDir = './ui/components';
+
+const routes = await getRouteMap(viewDir, { root: 'index', notFound: '404' });
 const render = handleRoute(routes, viewDir, {
   props: { title: 'My Site' },
+  componentDirPath: componentDir,
   errorView: 'error'
 });
 
@@ -44,7 +48,20 @@ http.createServer(async (req, res) => {
   ├── about.html      → /about
   ├── 404.html        → fallback
   └── error.html      → optional error fallback
+
+/ui/components/
+  /header/header.html
+  /card/card.html
 ```
+
+---
+
+## 🧩 Template Syntax
+
+- `{{title}}` → Safe substitution with provided `props`
+- `{{> card }}` → Includes `/ui/components/card/card.html`
+- Includes support nesting (max depth 10)
+- Components are static only (no logic, no props)
 
 ---
 
@@ -52,21 +69,22 @@ http.createServer(async (req, res) => {
 
 From `mfw/index.js`:
 
-- `getRouteMap(viewDirPath, { root?, notFound? })`  
-- `handleRoute(routeMap, viewDirPath, { props?, errorView? })`  
-- `resolveHtmlView(viewName, viewDirPath, props?)`
+- `getRouteMap(viewDir, { root?, notFound? })`
+- `handleRoute(routeMap, viewDir, { props?, componentDirPath?, errorView? })`
+- `resolveHtmlView(name, viewDir, props?, componentDirPath?)`
 
 ---
 
-## 📝 Notes
+## 📝 Philosophy
 
-- You can use `{{key}}` syntax in your `.html` files for prop substitution
-- This system is logic-free on purpose (no conditionals/loops)
-- You are free to extend it with a templating engine if needed
+- HTML is the source of truth
+- No build tools required
+- Logic stays on the server
+- Extend with your own middleware, routes, state
 
 ---
 
-## 🔗 Links
+## 🔗 Docs
 
-- [Docs: API Reference](./docs/api.md)
-- [Docs: Folder Conventions](./docs/conventions.md)
+- [API Reference](./docs/api.md)
+- [Folder Conventions](./docs/conventions.md)

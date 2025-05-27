@@ -12,13 +12,15 @@ export function handleRoute(
   options?: {
     props?: Record<string, unknown>;
     errorView?: string;
+    componentDirPath?: string;
   }
 ): (url: string) => Promise<string>;
 
 export function resolveHtmlView(
   name: string,
   viewDirPath: string,
-  props?: Record<string, unknown>
+  props?: Record<string, unknown>,
+  componentDirPath?: string
 ): Promise<string>;
 
 export function store<T>(
