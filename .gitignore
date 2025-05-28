@@ -1,0 +1,16 @@
+# Node.js
+node_modules/
+.env
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# OS / Editor junk
+*.swp
+*.swo
+*.bak
+.idea/
+.vscode/
+.cursor/
