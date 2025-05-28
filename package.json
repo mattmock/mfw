@@ -6,10 +6,12 @@
     "type": "commonjs",
     "author": "Matt Mock",
     "scripts": {
-      "test": "sh -c 'for file in test/*.test.js; do node \"$file\"; done'"
+      "test": "sh -c 'for file in test/*.test.js; do node \"$file\"; done'",
+      "dev": "node server.js"
     },
     "license": "MIT",
     "dependencies": {
-      "node-html-parser": "^6.1.4"
+      "node-html-parser": "^6.1.4",
+      "express": "^4.18.2"
     }
   }  
