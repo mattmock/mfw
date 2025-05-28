@@ -5,6 +5,9 @@
     "main": "lib/renderHtmlView.js",
     "type": "commonjs",
     "author": "Matt Mock",
+    "scripts": {
+      "test": "node test/injectByTag.test.js"
+    },
     "license": "MIT",
     "dependencies": {
       "node-html-parser": "^6.1.4"
