@@ -6,7 +6,7 @@
     "type": "commonjs",
     "author": "Matt Mock",
     "scripts": {
-      "test": "node test/injectByTag.test.js"
+      "test": "sh -c 'for file in test/*.test.js; do node \"$file\"; done'"
     },
     "license": "MIT",
     "dependencies": {
