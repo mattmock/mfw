@@ -13,11 +13,11 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.get('/', async (req, res) => {
     try {
       const baseViewPath = path.join('views', 'home.html');
-      const partialHtml = await injectByTag(
+      const pageContent = await injectByTag(
         baseViewPath,
         { partial: await injectByTag(path.join('views', 'partials', 'example.html')) }
       );
-      const html = await renderHtmlView('layout', { view: partialHtml });
+      const html = await renderHtmlView('home', { view: pageContent });
       res.send(html);
     } catch (err) {
       res.status(500).send(`<pre>${err.message}</pre>`);
