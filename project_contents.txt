@@ -1,0 +1,136 @@
+# Project Files Contents
+
+
+=== File: ./core/resolveHtmlView.js ===
+
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+
+// Loads .html views and interpolates variables + partials
+export async function resolveHtmlView(viewName, context = {}) {
+  try {
+    const viewPath = join(process.cwd(), 'views', `${viewName}.html`);
+    const content = await readFile(viewPath, 'utf-8');
+    
+    // Replace variables in the format {{variableName}}
+    return content.replace(/\{\{([^}]+)\}\}/g, (match, key) => {
+      return context[key.trim()] ?? match;
+    });
+  } catch (error) {
+    throw new Error(`Failed to resolve view ${viewName}: ${error.message}`);
+  }
+}
+
+
+=== File: ./core/renderPage.js ===
+
+import { resolveHtmlView } from './resolveHtmlView.js';
+
+// Optional helper to wrap views with layout
+export async function renderPage(viewName, viewContext, layoutContextOverrides = {}) {
+  // First resolve the main view content
+  const content = await resolveHtmlView(viewName, viewContext);
+  
+  // If no layout is specified, return the content as is
+  if (!layoutContextOverrides.layout) {
+    return content;
+  }
+  
+  // Resolve the layout with the content and any overrides
+  return resolveHtmlView(layoutContextOverrides.layout, {
+    ...viewContext,
+    ...layoutContextOverrides,
+    content
+  });
+}
+
+
+=== File: ./core/utils.js ===
+
+// Utility functions like escapeHtml, readFile, etc.
+export function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+
+=== File: ./README.md ===
+
+# MFW v2 (Minimal File-based Web Framework)
+
+MFW is a minimalist SSR rendering helper that works directly with HTML files, partials, and variable injection. It avoids JSX, hydration, or client-side frameworks entirely.
+
+## Core Philosophy
+
+- **Native HTML** — Use `.html` files directly for views and components
+- **Server-Side Rendering (SSR)** — Render everything before sending it to the browser
+- **Partial Includes** — `{{> partial-name}}` for reusable markup
+- **Variable Interpolation** — `{{ title }}`, `{{ content }}`, etc.
+- **No Build Step** — Works with any server, no bundlers required
+
+## Folder Structure (suggested)
+
+```
+/core/
+  resolveHtmlView.js
+  renderPage.js
+  utils.js
+```
+
+Use this inside your project with your own views, routes, and server.
+
+
+
+=== File: ./.gitignore ===
+
+# ESLint
+.eslintcache
+
+# Node
+node_modules/
+package-lock.json
+
+# IDE/editor configs
+.vscode/
+.idea/
+.DS_Store
+
+
+=== File: ./package.json ===
+
+{
+  "name": "mfw",
+  "version": "2.0.0",
+  "description": "Minimal File-based Web framework (SSR + HTML partials)",
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.2.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  }
+}
+
+
+=== File: ./eslint.config.js ===
+
+// eslint.config.js (flat config style)
+export default [
+  {
+    files: ["core/**/*.js"],
+    languageOptions: { ecmaVersion: "latest", sourceType: "module" },
+    rules: {
+      semi: ["error", "always"],
+      quotes: ["error", "double"],
+      "no-unused-vars": "warn",
+      "no-console": "off"
+    }
+  }
+];

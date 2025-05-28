@@ -1,0 +1,11 @@
+# ESLint
+.eslintcache
+
+# Node
+node_modules/
+package-lock.json
+
+# IDE/editor configs
+.vscode/
+.idea/
+.DS_Store

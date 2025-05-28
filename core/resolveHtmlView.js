@@ -1,53 +1,57 @@
-import fs from 'fs/promises';
-import path from 'path';
+import { readFile } from "fs/promises";
+import { join } from "path";
+import { escapeHtml } from "./utils.js";
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+// Loads .html views and interpolates variables + partials
+async function readHtml(filePath) {
+  try {
+    return await readFile(filePath, "utf-8");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error(`File not found: ${filePath}`);
+    }
+    throw error;
+  }
 }
 
-async function injectIncludes(html, componentDirPath, depth = 0) {
-  if (!componentDirPath || depth > 10) return html; // Prevent infinite recursion
-  
-  const includePattern = /{{>\s*([a-zA-Z0-9\-_]+)\s*}}/g;
-  const matches = [...html.matchAll(includePattern)];
-  
-  if (matches.length === 0) return html;
-  
-  let result = html;
-  for (const match of matches) {
-    const [fullMatch, name] = match;
-    const safeName = name.replace(/[^a-zA-Z0-9\-_]/g, ''); // Sanitize component name
-    
-    try {
-      const filePath = path.join(componentDirPath, safeName, safeName + '.html');
-      const componentHtml = await fs.readFile(filePath, 'utf-8');
-      // Recursively process nested includes
-      const processedComponent = await injectIncludes(componentHtml, componentDirPath, depth + 1);
-      result = result.replace(fullMatch, processedComponent);
-    } catch (err) {
-      console.error(`[injectIncludes] Failed to load component: ${safeName}`, err);
-      result = result.replace(fullMatch, `<div style="color:red">Missing component: ${safeName}</div>`);
-    }
+async function resolvePartials(content, partialsDir, depth = 0) {
+  if (depth > 10) {
+    throw new Error("Maximum partial nesting depth (10) exceeded");
   }
-  
+
+  const partialPattern = /{{>\s*([a-zA-Z0-9\-_]+)\s*}}/g;
+  let result = content;
+  let match;
+
+  while ((match = partialPattern.exec(content)) !== null) {
+    const [fullMatch, name] = match;
+    const partialPath = join(partialsDir, `${name}.html`);
+    const partial = await readHtml(partialPath);
+    const resolvedPartial = await resolvePartials(partial, partialsDir, depth + 1);
+    result = result.replace(fullMatch, resolvedPartial);
+  }
+
   return result;
 }
 
-export async function resolveHtmlView(name, viewDirPath, props = {}, componentDirPath) {
-  const filePath = path.join(viewDirPath, name + '.html');
-  let html = await fs.readFile(filePath, 'utf-8');
+function interpolate(content, context) {
+  return content.replace(/{{\s*([^}\s]+)\s*}}/g, (_, key) => {
+    return key in context ? escapeHtml(context[key]) : "";
+  });
+}
 
-  // Replace props first
-  for (const [key, value] of Object.entries(props)) {
-    html = html.replaceAll(`{{${key}}}`, escapeHtml(String(value)));
+export async function resolveHtmlView(viewName, context = {}) {
+  // Validate viewName to prevent directory traversal
+  if (!/^[a-zA-Z0-9\-_]+$/.test(viewName)) {
+    throw new Error("Invalid view name. Only alphanumeric characters, hyphens, and underscores are allowed.");
   }
 
-  // Then handle includes
-  html = await injectIncludes(html, componentDirPath);
-  return html;
+  const root = process.cwd();
+  const viewsDir = join(root, "views");
+  const partialsDir = join(root, "partials");
+  const viewPath = join(viewsDir, `${viewName}.html`);
+  
+  let content = await readHtml(viewPath);
+  content = await resolvePartials(content, partialsDir);
+  return interpolate(content, context);
 }
