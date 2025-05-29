@@ -11,7 +11,7 @@ const { renderHtmlView } = require('../lib/renderHtmlView');
   // Run render with fixtures
   const result = await renderHtmlView(viewName, {
     layoutPath: path.join(fixturesDir, 'views', 'layout.html'),
-    viewsDir: path.join(fixturesDir, 'views'),
+    viewsDir: fixturesDir,
     publicDir: fixturesDir,
     view: await fs.readFile(path.join(fixturesDir, 'views', 'testview.html'), 'utf-8')
   });
@@ -31,6 +31,10 @@ const { renderHtmlView } = require('../lib/renderHtmlView');
   // Test basic HTML structure
   assert(result.includes('<html>'), 'HTML structure should be preserved');
   assert(result.includes('</body>'), 'HTML structure should be preserved');
+
+  // Test partial injection
+  assert(result.includes('<div class="card">'), 'Partial should be rendered as a div with card class');
+  assert(result.includes('href="/partials/card/style.css"'), 'Partial CSS should be included');
 
   console.log('✅ renderHtmlView test passed');
 })();
