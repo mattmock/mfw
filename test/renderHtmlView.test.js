@@ -8,23 +8,12 @@ const { renderHtmlView } = require('../lib/renderHtmlView');
   const viewName = 'testview';
   const fixturesDir = path.join(__dirname, 'fixtures');
   
-  // Create necessary directories for test files
-  await fs.mkdir(path.join('public', 'css'), { recursive: true });
-  await fs.mkdir(path.join('public', 'js'), { recursive: true });
-  
-  // Copy test files to public directory
-  await fs.copyFile(
-    path.join(fixturesDir, 'testview.css'),
-    path.join('public', 'css', 'testview.css')
-  );
-  await fs.copyFile(
-    path.join(fixturesDir, 'testview.js'),
-    path.join('public', 'js', 'testview.js')
-  );
-
-  // Run render
+  // Run render with fixtures
   const result = await renderHtmlView(viewName, {
-    view: await fs.readFile(path.join(fixturesDir, 'testview.html'), 'utf-8')
+    layoutPath: path.join(fixturesDir, 'views', 'layout.html'),
+    viewsDir: path.join(fixturesDir, 'views'),
+    publicDir: fixturesDir,
+    view: await fs.readFile(path.join(fixturesDir, 'views', 'testview.html'), 'utf-8')
   });
 
   // Test view injection
@@ -33,11 +22,11 @@ const { renderHtmlView } = require('../lib/renderHtmlView');
   
   // Test CSS injection
   assert(result.includes('<link tag="css" rel="stylesheet"'), 'CSS link should be properly configured');
-  assert(result.includes(`href="/public/css/${viewName}.css"`), 'CSS href should be correct');
+  assert(result.includes(`href="/${fixturesDir}/css/${viewName}.css"`), 'CSS href should be correct');
 
   // Test JS injection
   assert(result.includes('<script tag="js"'), 'JS script tag should be present');
-  assert(result.includes(`src="/public/js/${viewName}.js"`), 'JS src should be correct');
+  assert(result.includes(`src="/${fixturesDir}/js/${viewName}.js"`), 'JS src should be correct');
 
   // Test basic HTML structure
   assert(result.includes('<html>'), 'HTML structure should be preserved');
