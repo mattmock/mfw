@@ -8,25 +8,6 @@
 * No client-side frameworks, no bundlers required
 * Reusable HTML via partials, injected with light logic (Node-only for now)
 
-## 📁 Project Structure
-
-```
-mfw/
-├── views/
-│   └── layout.html          # Layout shell (wraps views)
-│
-├── lib/
-│   ├── injectByTag.js       # Partial injection via tag="..."
-│   └── renderHtmlView.js    # Resolves layout, view, CSS/JS
-│
-├── test/
-│   └── injectByTag.test.js  # Unit tests for core injection logic
-│
-├── .gitignore
-├── package.json
-└── README.md
-```
-
 ## 🚀 Getting Started
 
 ### Quick Start
@@ -72,6 +53,29 @@ app.get('/', async (req, res) => {
 });
 ```
 
+### The Layout Shell
+
+`views/layout.html` is your app's HTML shell. It defines the base structure and includes placeholders for dynamic content:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MFW</title>
+  {{ cssPath }}  <!-- Injects view-specific CSS if it exists -->
+</head>
+<body>
+  {{ view }}     <!-- Injects your view's HTML -->
+  {{ jsPath }}   <!-- Injects view-specific JS if it exists -->
+</body>
+</html>
+```
+
+When you call `renderHtmlView('home')`, it:
+1. Loads this layout
+2. Injects your view's HTML into `{{ view }}`
+3. Adds any view-specific CSS/JS via `{{ cssPath }}` and `{{ jsPath }}`
+
 ### Injecting Partials
 
 Add `tag="..."` attributes to elements in your HTML:
@@ -100,11 +104,24 @@ MFW requires:
 - `node-html-parser` for HTML parsing and manipulation
 - `express` (optional) for the example server
 
-## 🪶 Lightweight & Extensible
+## 📁 Project Structure
 
-MFW is Node-based, but the concept is portable to other stacks. Just bring your own HTML parser.
-
-* Want typed routes? Add your own router.
-* Want to plug it into a Rust, Python, or Go backend? No problem — MFW is frontend-only.
+```
+mfw/
+├── views/
+│   └── layout.html          # Layout shell (wraps views)
+│
+├── lib/
+│   ├── injectByTag.js       # Partial injection via tag="..."
+│   └── renderHtmlView.js    # Resolves layout, view, CSS/JS
+│
+├── test/
+│   └── injectByTag.test.js  # Unit tests for core injection logic
+│   └── renderHtmlView.test.js  # Unit tests for view rendering
+│
+├── .gitignore
+├── package.json
+└── README.md
+```
 
 MIT License
