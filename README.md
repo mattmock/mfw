@@ -1,127 +1,131 @@
-# MFW
+# MFW - Modern Framework
 
-**Minimal Frontend Wrapper** – a tiny server-rendered HTML-first helper
+A modern framework for building web applications with a focus on simplicity and maintainability.
 
-* HTML lives in `.html`, not JS
-* CSS lives in `.css`, not inline
-* Minimal dependencies, zero runtime
-* No client-side frameworks, no bundlers required
-* Reusable HTML via partials, injected with light logic (Node-only for now)
+## Features
 
-## 🚀 Getting Started
+- Component-based architecture with structs and parts
+- Automatic CSS and JS injection
+- Data attribute interpolation
+- Caching for improved performance
+- Type-safe partial loading
 
-### Quick Start
+## Quick Start
 
-For a ready-to-use starter project with examples, check out [mfw-starter](https://github.com/mattmock/mfw-starter).
+```javascript
+const { renderHtmlView } = require('mfw/lib/renderHtmlView');
 
-### Core Usage
-
-1. Get the core files:
-```bash
-npx degit mattmock/mfw
-# or just copy lib/ and views/layout.html to your project
+// Render a view
+const html = await renderHtmlView('home', {
+  viewsDir: 'views',
+  publicDir: 'public'
+});
 ```
 
-2. Create your first view (`views/home.html`):
+## Component System
+
+### Views
+Views are the top-level components that define a page:
+
 ```html
-<div class="page">
-  <h1>Welcome to My App</h1>
-  <div tag="partial"></div>
+<!-- views/home.html -->
+<struct name="header">
+  <part name="title">Welcome</part>
+</struct>
+
+<struct name="content">
+  <part name="main">Hello World!</part>
+</struct>
+```
+
+### Structs
+Structs are structural components that can contain parts:
+
+```html
+<!-- structs/card-shell/card-shell.html -->
+<div class="card" data-theme="{{ data-theme }}">
+  <part name="header"></part>
+  <part name="content"></part>
 </div>
 ```
 
-3. Use the core functions in your server (express example):
+### Parts
+Parts are content components that can be injected into structs:
 
-```js
-const express = require('express');
-const path = require('path');
-const { renderHtmlView } = require('./lib/renderHtmlView');
-const { injectByTag } = require('./lib/injectByTag');
+```html
+<!-- parts/button/button.html -->
+<button class="btn" data-variant="{{ data-variant }}">
+  {{ data-content }}
+</button>
+```
 
-app.get('/', async (req, res) => {
-  try {
-    const baseViewPath = path.join('views', 'home.html');
-    const pageContent = await injectByTag(
-      baseViewPath,
-      { partial: await injectByTag(path.join('views', 'partials', 'example.html')) }
-    );
-    const html = await renderHtmlView('home', { view: pageContent });
-    res.send(html);
-  } catch (err) {
-    res.status(500).send(`<pre>${err.message}</pre>`);
+## Data Attributes
+
+Use data attributes to pass data to components:
+
+```html
+<struct name="card" data-theme="dark" data-title="My Card">
+  <part name="header" data-content="Card Header"></part>
+</struct>
+```
+
+## Directory Structure
+
+```
+mfw/
+├── lib/                    # Core framework code
+│   ├── renderHtmlView.js   # View rendering
+│   ├── injectByName.js     # Name-based injection
+│   └── injectPartials.js   # Partial processing
+├── views/                  # View files
+│   └── home/
+│       ├── home.html
+│       ├── home.css
+│       └── home.js
+├── structs/               # Structural components
+│   └── card-shell/
+│       ├── card-shell.html
+│       └── card-shell.css
+├── parts/                 # Content components
+│   └── button/
+│       ├── button.html
+│       └── button.css
+└── public/               # Static assets
+    ├── css/
+    │   └── main.css
+    └── js/
+        └── main.js
+```
+
+## API Reference
+
+### renderHtmlView(viewName, options)
+
+Renders a complete HTML page.
+
+```javascript
+const html = await renderHtmlView('home', {
+  appPath: 'app.html',     // Layout file
+  viewsDir: 'views',       // Views directory
+  publicDir: 'public'      // Public assets directory
+});
+```
+
+### injectByName(filePath, options)
+
+Injects content into structs and parts.
+
+```javascript
+const { html, cssPaths } = await injectByName('views/home.html', {
+  type: 'view',
+  viewsDir: 'views',
+  publicDir: 'public',
+  data: {
+    theme: 'dark'
   }
 });
 ```
 
-### The Layout Shell
+## License
 
-`views/layout.html` is your app's HTML shell. It defines the base structure and includes placeholders for dynamic content:
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>MFW</title>
-  {{ cssPath }}  <!-- Injects view-specific CSS if it exists -->
-</head>
-<body>
-  {{ view }}     <!-- Injects your view's HTML -->
-  {{ jsPath }}   <!-- Injects view-specific JS if it exists -->
-</body>
-</html>
-```
-
-When you call `renderHtmlView('home')`, it:
-1. Loads this layout
-2. Injects your view's HTML into `{{ view }}`
-3. Adds any view-specific CSS/JS via `{{ cssPath }}` and `{{ jsPath }}`
-
-### Injecting Partials
-
-Add `tag="..."` attributes to elements in your HTML:
-
-```html
-<div class="card">
-  <h2 tag="title">Default Title</h2>
-  <p tag="content">Default content</p>
-</div>
-```
-
-Inject content by matching tag names:
-
-```js
-await injectByTag('views/partials/card.html', {
-  title: 'Custom Title',
-  content: 'Custom description'
-});
-```
-
-Note: Each tag name must be unique within a partial. Duplicate tags will throw an error.
-
-### Dependencies
-
-MFW requires:
-- `node-html-parser` for HTML parsing and manipulation
-- `express` (optional) for the example server
-
-## 📁 Project Structure
-
-```
-mfw/
-├── views/
-│   └── layout.html          # Layout shell (wraps views)
-│
-├── lib/
-│   ├── injectByTag.js       # Partial injection via tag="..."
-│   └── renderHtmlView.js    # Resolves layout, view, CSS/JS
-│
-├── test/
-│   └── injectByTag.test.js  # Unit tests for core injection logic
-│   └── renderHtmlView.test.js  # Unit tests for view rendering
-│
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-MIT License
+MIT
