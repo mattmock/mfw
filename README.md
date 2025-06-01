@@ -1,12 +1,12 @@
-# MFW - Modern Framework
+# MFW
 
-A modern framework for building web applications with a focus on simplicity and maintainability.
+A tiny server-rendered HTML-first helper
 
 ## Features
 
-- Component-based architecture with structs and parts
+- Partial-based architecture with structs and parts
 - Automatic CSS and JS injection
-- Data attribute interpolation
+- Simple view routing
 - Caching for improved performance
 - Type-safe partial loading
 
@@ -22,51 +22,51 @@ const html = await renderHtmlView('home', {
 });
 ```
 
-## Component System
+## Partial System
 
 ### Views
-Views are the top-level components that define a page:
+Views are the top-level html that define a page:
 
 ```html
-<!-- views/home.html -->
-<struct name="header">
-  <part name="title">Welcome</part>
-</struct>
-
-<struct name="content">
-  <part name="main">Hello World!</part>
-</struct>
+<!-- views/home/home.html -->
+<view-root>
+  <h1>Welcome to MFW</h1>
+  
+  <!-- Standalone parts -->
+  <part name="intro"/>
+  <part name="button"/>
+  
+  <!-- A struct with its own parts -->
+  <struct name="card-shell"/>
+  
+  <!-- Another standalone part -->
+  <part name="footer"/>
+</view-root>
 ```
 
 ### Structs
-Structs are structural components that can contain parts:
+Structs are structural partials that can contain parts:
 
 ```html
 <!-- structs/card-shell/card-shell.html -->
-<div class="card" data-theme="{{ data-theme }}">
-  <part name="header"></part>
-  <part name="content"></part>
+<div class="card-shell">
+  <div class="card-header">
+    <part name="header"></part>
+  </div>
+  <div class="card-content">
+    <part name="content"></part>
+  </div>
 </div>
 ```
 
 ### Parts
-Parts are content components that can be injected into structs:
+Parts are content partials that can be used in views or structs:
 
 ```html
 <!-- parts/button/button.html -->
-<button class="btn" data-variant="{{ data-variant }}">
-  {{ data-content }}
+<button class="mfw-button">
+  Get Started
 </button>
-```
-
-## Data Attributes
-
-Use data attributes to pass data to components:
-
-```html
-<struct name="card" data-theme="dark" data-title="My Card">
-  <part name="header" data-content="Card Header"></part>
-</struct>
 ```
 
 ## Directory Structure
@@ -76,17 +76,18 @@ mfw/
 ├── lib/                    # Core framework code
 │   ├── renderHtmlView.js   # View rendering
 │   ├── injectByName.js     # Name-based injection
-│   └── injectPartials.js   # Partial processing
+│   ├── injectPartials.js   # Partial processing
+│   └── router.js          # Simple view routing
 ├── views/                  # View files
 │   └── home/
 │       ├── home.html
 │       ├── home.css
 │       └── home.js
-├── structs/               # Structural components
+├── structs/               # Structural partials
 │   └── card-shell/
 │       ├── card-shell.html
 │       └── card-shell.css
-├── parts/                 # Content components
+├── parts/                 # Content partials
 │   └── button/
 │       ├── button.html
 │       └── button.css
@@ -116,16 +117,9 @@ const html = await renderHtmlView('home', {
 Injects content into structs and parts.
 
 ```javascript
-const { html, cssPaths } = await injectByName('views/home.html', {
+const { html, cssPaths } = await injectByName('views/home/home.html', {
   type: 'view',
   viewsDir: 'views',
-  publicDir: 'public',
-  data: {
-    theme: 'dark'
-  }
+  publicDir: 'public'
 });
 ```
-
-## License
-
-MIT
